@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pingdom_http_custom_check>
+<status>
+The following URLs redirect is incorrect
+<www.great.gov.uk-trade>
+Expected ...
+https://find-a-buyer.export.great.gov.uk/international
+404 ...Actually Returned @ Time Of Failure: 18/01/2017-13:47:21
+</www.great.gov.uk-trade>
+</status>
+<response_time>9798.17</response_time>
+</pingdom_http_custom_check>
