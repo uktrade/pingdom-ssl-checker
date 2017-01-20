@@ -35,7 +35,7 @@ class RunCheck(object):
 
 	def get_ssl_status(self, url):
 		#print url
-		response_url = subprocess.check_output("echo | openssl s_client -connect " + url + ":443 -tls1 2>/dev/null |grep Verify |awk '{print $5}'", shell=True)
+		response_url = subprocess.check_output("echo | openssl s_client -connect " + url + ":443 -CAfile /etc/ssl/certs/ca-certificates.crt -tls1 2>/dev/null |grep Verify |awk '{print $5}'", shell=True)
 
 
 		return response_url[:4]
