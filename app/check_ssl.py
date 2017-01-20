@@ -25,21 +25,21 @@ class RunCheck(object):
 				if not current_url.startswith("#"):
 
 					if first:
-						out.write('{}{}{}'.format("\"", current_url, "\":\"OK\""))
+						out.write('{}{}{}'.format("\"", current_url, "\":\"(ok)\""))
 
 						first = False
 					else:
-						out.write('{}{}{}'.format(",\"", current_url, "\":\"OK\""))
+						out.write('{}{}{}'.format(",\"", current_url, "\":\"(ok)\""))
 
 			out.write ('{}'.format("}"))
 
 	def get_ssl_status(self, url):
-		print url
-		response_url = subprocess.check_output("echo | openssl s_client -connect " + url + ":443 2>/dev/null |grep Verify |awk '{print $5}'", shell=True)
+		#print url
+		response_url = subprocess.check_output("echo | openssl s_client -connect " + url + ":443 -tls1 2>/dev/null |grep Verify |awk '{print $5}'", shell=True)
 		#p = subprocess.Popen(["echo|" , "openssl s_client -connect google.com:443"], stdout=subprocess.PIPE)
 		#response_url, err = p.communicate()
 
-		return response_url
+		return response_url[:4]
 
 
 	def run(self):
@@ -54,7 +54,7 @@ class RunCheck(object):
 			xml_out_5 = "</pingdom_http_custom_check>"
 
 			#url_contents = [url_content.rstrip('\n') for url_content in open('url_list')]
-			timestr = time.strftime(" ...Actually Returned @ Time Of Failure: %d/%m/%Y-%H:%M:%S")
+			timestr = time.strftime(" Returned @ Time Of Failure: %d/%m/%Y-%H:%M:%S")
 			redirect_status = True
 			t0 = time.time()
 
@@ -64,11 +64,11 @@ class RunCheck(object):
 			for current_url, status in d.iteritems():
 
 					response_url = self.get_ssl_status(current_url)
-					print response_url
-					sys.exit()
+					#print response_url
 
-					#if response_url[-1] == '/':
-					#	response_url = response_url[:-1]
+
+					if response_url != '(ok)':
+						response_url = "Bad cert please check site!"
 					print "Checking URL: %s\tRespose: %s" % (current_url, response_url)
 
 					# with open('app/templates/logs.html', 'a') as out:
@@ -76,20 +76,20 @@ class RunCheck(object):
 
 					# if response_code != 200:
 					# 	redirect_status = False
-					if response_url != status[0]:
+					if response_url != status:
 						redirect_status = False
 						#status[1] = response_url + timestr
 
 						with open('app/templates/logs.html', 'a') as out:
-							out.write('{}{}{}{}{}{}{}{}{}\n'.format('Source: ',current_url ,'    Expected result: ',status[0] ,'    Actual result: ',response_url ,' -- Result: ', 'BAD', '<br/>'))
+							out.write('{}{}{}{}{}{}{}{}{}\n'.format('Source: ',current_url ,'    Expected result: ',status ,'    Actual result: ',response_url ,' -- Result: ', 'BAD', '<br/>'))
 
-						if (status[1] == 'OK'):
-							status[1] = response_url + timestr
+						if (status == '(ok)'):
+							d[current_url] = response_url + timestr
 
-					if response_url == status[0]:
-						status[1] = "OK"
+					if response_url == status:
+						status = "(ok)"
 						with open('app/templates/logs.html', 'a') as out:
-							out.write('{}{}{}{}{}{}{}{}{}\n'.format('Source: ',current_url ,'    Expected result: ',status[0] ,'    Actual result: ',response_url ,' -- Result: ', 'GOOD', '<br/>'))
+							out.write('{}{}{}{}{}{}{}{}{}\n'.format('Source: ',current_url ,'    Expected result: ',status ,'    Actual result: ',response_url ,' -- Result: ', 'GOOD', '<br/>'))
 
 			with open('url_status.json', 'w') as json_file:
 				json.dump(d, json_file)
@@ -117,13 +117,14 @@ class RunCheck(object):
 							#print (key)
 							#print (value)
 
-							if (value[1] != 'OK'):
-								out.write('{}\n{}{}{}\n'.format("The following URLs redirect is incorrect", "<", key[7:].replace('/','-'), ">"))
-								out.write('{}\n'.format("Expected ..."))
-								for x in value:
-									out.write('{}\n'.format(x))
+							if (value != '(ok)'):
+								out.write('{}{}{}\n'.format("<", key.replace('/','-'), ">"))
+								#out.write('{}\n'.format("Expected ..."))
+								out.write('{}{}{}\n'.format(key, ":  ", value))
+								#for x in value:
+								#	out.write('{}\n'.format(x))
 								#out.write('{}\n'.format("...Actually Returned"))
-								out.write('{}{}{}\n'.format("</", key[7:].replace('/','-'), ">"))
+								out.write('{}{}{}\n'.format("</", key.replace('/','-'), ">"))
 
 					out.write('{}\n'.format("</status>"))
 					# xml_out_3 = "<status XML-LINK=\"LINK\" HREF=\"https://pingdom-redirect-checker.ukti.io/logs.html\">Logs Link</status>"
