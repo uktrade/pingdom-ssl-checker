@@ -36,8 +36,7 @@ class RunCheck(object):
 	def get_ssl_status(self, url):
 		#print url
 		response_url = subprocess.check_output("echo | openssl s_client -connect " + url + ":443 -tls1 2>/dev/null |grep Verify |awk '{print $5}'", shell=True)
-		#p = subprocess.Popen(["echo|" , "openssl s_client -connect google.com:443"], stdout=subprocess.PIPE)
-		#response_url, err = p.communicate()
+
 
 		return response_url[:4]
 
