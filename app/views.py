@@ -13,5 +13,5 @@ def serve_static_check():
 
 @app.route('/refresh')
 def refresh_check():
-	execute_checks = check_redirects.run_check()
+	execute_checks = check_ssl.run()
 	return send_from_directory(root, "refresh.html")
