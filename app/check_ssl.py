@@ -41,12 +41,19 @@ class RunCheck(object):
 	@staticmethod
 	def get_ssl_status(url):
 		# print url
-		ssl_check = "echo | openssl s_client -connect " \
+		tls_check = "echo | openssl s_client -connect " \
 					+ url \
 					+ ":443 -CAfile /etc/ssl/certs/ca-certificates.crt -tls1 2>/dev/null |grep Verify |awk '{print $5}'"
 
+		tls_response = subprocess.check_output(tls_check, shell=True)
+
+		ssl_check = "echo | openssl s_client -connect " \
+					+ url \
+					+ ":443 -CAfile /etc/ssl/certs/ca-certificates.crt -ssl3 2>/dev/null |grep '^    Cipher' |awk '{print $3}'"
+
 		ssl_response = subprocess.check_output(ssl_check, shell=True)
-		return ssl_response[:4]
+
+		return tls_response[:4], ssl_response
 
 	def run(self):
 		""" Method that runs forever """
@@ -68,13 +75,14 @@ class RunCheck(object):
 
 			for current_url, status in url_list_json.iteritems():
 
-					ssl_response = RunCheck.get_ssl_status(current_url)
+					tls_response, ssl_response = RunCheck.get_ssl_status(current_url)
+					print tls_response, ssl_response
 
-					if ssl_response != '(ok)':
-						ssl_response = "Bad cert please check site!"
-					print "Checking URL: %s\tResponse: %s" % (current_url, ssl_response)
+					if ( tls_response != '(ok)' or ssl_response != '0000' ):
+						tls_response = "Bad cert please check site!"
+					print "Checking URL: %s\tResponse: %s" % (current_url, tls_response)
 
-					if ssl_response != status:
+					if ( tls_response != status or ssl_response != '0000' ):
 						ssl_status = False
 
 						with open('app/templates/logs.html', 'a') as out:
@@ -84,7 +92,7 @@ class RunCheck(object):
 																	'    Expected result: ',
 																	status,
 																	'    Actual result: ',
-																	ssl_response,
+																	tls_response,
 																	' -- Result: ',
 																	'BAD',
 																	'<br/>'))
@@ -92,7 +100,7 @@ class RunCheck(object):
 						if status == '(ok)':
 							url_list_json[current_url] = ssl_response + time_str
 
-					if ssl_response == status:
+					if ( tls_response == status and ssl_response != '0000' ):
 						status = "(ok)"
 						with open('app/templates/logs.html', 'a') as out:
 							out.write('{}{}{}{}{}{}{}{}{}\n'.format(
@@ -101,7 +109,7 @@ class RunCheck(object):
 																	'    Expected result: ',
 																	status,
 																	'    Actual result: ',
-																	ssl_response,
+																	tls_response,
 																	' -- Result: ',
 																	'GOOD',
 																	'<br/>'))
