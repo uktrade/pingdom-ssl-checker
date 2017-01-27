@@ -53,7 +53,7 @@ class RunCheck(object):
 
 		ssl_response = subprocess.check_output(ssl_check, shell=True)
 
-		return tls_response[:4], ssl_response
+		return tls_response[:4], ssl_response[:4]
 
 	def run(self):
 		""" Method that runs forever """
@@ -100,7 +100,7 @@ class RunCheck(object):
 						if status == '(ok)':
 							url_list_json[current_url] = ssl_response + time_str
 
-					if ( tls_response == status and ssl_response != '0000' ):
+					if ( tls_response == status and ssl_response == '0000' ):
 						status = "(ok)"
 						with open('app/templates/logs.html', 'a') as out:
 							out.write('{}{}{}{}{}{}{}{}{}\n'.format(
