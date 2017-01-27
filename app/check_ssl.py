@@ -76,13 +76,12 @@ class RunCheck(object):
 			for current_url, status in url_list_json.iteritems():
 
 					tls_response, ssl_response = RunCheck.get_ssl_status(current_url)
-					print tls_response, ssl_response
 
-					if ( tls_response != '(ok)' or ssl_response != '0000' ):
+					if tls_response != '(ok)' or ssl_response != '0000':
 						tls_response = "Bad cert please check site!"
 					print "Checking URL: %s\tResponse: %s" % (current_url, tls_response)
 
-					if ( tls_response != status or ssl_response != '0000' ):
+					if tls_response != status or ssl_response != '0000':
 						ssl_status = False
 
 						with open('app/templates/logs.html', 'a') as out:
@@ -100,7 +99,7 @@ class RunCheck(object):
 						if status == '(ok)':
 							url_list_json[current_url] = ssl_response + time_str
 
-					if ( tls_response == status and ssl_response == '0000' ):
+					if tls_response == status and ssl_response == '0000':
 						status = "(ok)"
 						with open('app/templates/logs.html', 'a') as out:
 							out.write('{}{}{}{}{}{}{}{}{}\n'.format(
