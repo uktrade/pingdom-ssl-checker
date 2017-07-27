@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Deploy') {
             steps {
-                echo "Uploading to PaaS"
+                echo "Deploying to...${params.environment}"
         
                 //sh "git clone ${params.github_url}/${params.project_name}-envs.git"
                 script {
@@ -16,7 +16,10 @@ pipeline {
                             env.app_name = "${params.project_name}-${params.environment}"
                         }
                 }
+                
                 sh "cf login -a api.cloud.service.gov.uk -u ${params.cf_username} -p ${params.cf_password} -s ${env.app_space}"
+                sh "cf push ${env.app_name} --no-start"
+                //sh "while read env_var; do cf set-env ${env.app_name} \$env_var;done < ${params.project_name}-envs/${params.environment}/Paasenvfile"
                 sh "cf set-env ${env.app_name} CHECK_INTERVAL 300"
                 sh "cf push ${env.app_name}" 
             }
