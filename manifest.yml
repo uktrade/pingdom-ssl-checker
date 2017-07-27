@@ -1,8 +1,7 @@
-
 ---
 applications:
 - name: pingdom-ssl-checker
   memory: 64M
   buildpack: python_buildpack
   env:
-CHECK_INTERVAL: 300
+    CHECK_INTERVAL: 300
